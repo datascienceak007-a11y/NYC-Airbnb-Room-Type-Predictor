@@ -3,6 +3,9 @@ import pandas as pd
 from pydantic import BaseModel,Field
 import joblib
 from fastapi.middleware.cors import CORSMiddleware
+from download_model import download_model
+
+download_model()  # Ensure the model is downloaded before loading it
 
 
 app = FastAPI()
