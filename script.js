@@ -10,7 +10,7 @@ const CLASS_LABELS_BY_LENGTH = {
   3: ["Entire home/apt", "Private room", "Shared room"],
 };
 
-const DEFAULT_API_URL = "http://127.0.0.1:8000";
+const DEFAULT_API_URL = "https://nyc-airbnb-room-type-predictor-9o18.onrender.com";
 
 const NEIGHBOURHOODS_BY_BOROUGH = {
   Manhattan: ["Harlem", "Upper West Side", "Chelsea", "East Village", "Midtown", "Hell's Kitchen"],
