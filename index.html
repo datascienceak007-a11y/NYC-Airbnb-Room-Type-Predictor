@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StayScope — Listing Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="aurora" aria-hidden="true">
+    <span class="blob blob-gold"></span>
+    <span class="blob blob-emerald"></span>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-mark">◐</span>
+      <span class="wordmark-text">Stay<em>Scope</em></span>
+    </div>
+    <div class="conn-status" id="connStatus" data-state="checking">
+      <span class="dot"></span>
+      <span class="conn-label">Checking API…</span>
+      <button class="gear-btn" id="gearBtn" title="API settings" aria-label="API settings">⚙</button>
+    </div>
+  </header>
+
+  <div class="api-popover" id="apiPopover">
+    <label for="apiUrlInput">Backend URL</label>
+    <input type="text" id="apiUrlInput" placeholder="http://127.0.0.1:8000" />
+    <div class="api-popover-actions">
+      <button id="apiSaveBtn" class="btn-ghost btn-gold">Save</button>
+      <button id="apiCloseBtn" class="btn-ghost">Close</button>
+    </div>
+  </div>
+
+  <main class="layout">
+
+    <!-- FORM -->
+    <section class="panel form-panel">
+      <div class="panel-intro">
+        <h1>What kind of stay is <em>this</em>?</h1>
+        <p>Enter the listing details and StayScope's model estimates the outcome, with a confidence
+          breakdown for every class.</p>
+      </div>
+
+      <form id="predictForm" novalidate>
+
+        <div class="form-grid">
+
+          <fieldset class="field-group reveal" style="--d:0">
+            <legend><span class="fg-icon">📍</span> Where it is</legend>
+
+            <div class="row two">
+              <div class="field">
+                <label for="latitude">Latitude</label>
+                <input type="number" id="latitude" name="latitude" step="0.000001" min="-90" max="90"
+                  value="40.7128" required />
+              </div>
+              <div class="field">
+                <label for="longitude">Longitude</label>
+                <input type="number" id="longitude" name="longitude" step="0.000001" min="-180" max="180"
+                  value="-73.9560" required />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Borough</label>
+              <div class="chip-group" id="boroughChips" role="radiogroup" aria-label="Borough">
+                <div class="chip-highlight" id="chipHighlight"></div>
+                <button type="button" class="chip active" data-value="Manhattan">Manhattan</button>
+                <button type="button" class="chip" data-value="Brooklyn">Brooklyn</button>
+                <button type="button" class="chip" data-value="Queens">Queens</button>
+                <button type="button" class="chip" data-value="Bronx">Bronx</button>
+                <button type="button" class="chip" data-value="Staten Island">Staten Island</button>
+              </div>
+              <input type="hidden" id="neighbourhood_group" name="neighbourhood_group" value="Manhattan" />
+            </div>
+
+            <div class="row two align-end">
+              <div class="field">
+                <label for="neighbourhood">Neighbourhood</label>
+                <input type="text" id="neighbourhood" name="neighbourhood" list="nbList" placeholder="e.g. Williamsburg"
+                  value="Harlem" required />
+                <datalist id="nbList"></datalist>
+              </div>
+              <div class="mini-map" id="miniMap" aria-hidden="true">
+                <div class="mini-map-pin" id="miniMapPin"></div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group reveal" style="--d:1">
+            <legend><span class="fg-icon">💵</span> Pricing &amp; stay length</legend>
+
+            <div class="field slider-field">
+              <label for="price">Price per night</label>
+              <div class="slider-wrap">
+                <div class="slider-bubble" id="priceBubble">$150</div>
+                <input type="range" id="price" name="price" min="10" max="1000" step="1" value="150" required />
+              </div>
+            </div>
+
+            <div class="field slider-field">
+              <label for="minimum_nights">Minimum nights</label>
+              <div class="slider-wrap">
+                <div class="slider-bubble" id="minNightsBubble">3</div>
+                <input type="range" id="minimum_nights" name="minimum_nights" min="1" max="365" step="1" value="3" required />
+              </div>
+            </div>
+
+            <div class="field slider-field">
+              <label for="availability_365">Days available / year</label>
+              <div class="slider-wrap">
+                <div class="slider-bubble" id="availBubble">180</div>
+                <input type="range" id="availability_365" name="availability_365" min="0" max="365" step="1" value="180" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group reveal span-2" style="--d:2">
+            <legend><span class="fg-icon">⭐</span> Track record</legend>
+
+            <div class="row three">
+              <div class="field">
+                <label for="number_of_reviews">Total reviews</label>
+                <input type="number" id="number_of_reviews" name="number_of_reviews" min="0" value="24" required />
+              </div>
+              <div class="field">
+                <label for="reviews_per_month">Reviews / month</label>
+                <input type="number" id="reviews_per_month" name="reviews_per_month" min="0" step="0.01" value="1.2" required />
+              </div>
+              <div class="field">
+                <label for="calculated_host_listings_count">Host's other listings</label>
+                <input type="number" id="calculated_host_listings_count" name="calculated_host_listings_count" min="0" value="1" required />
+              </div>
+            </div>
+          </fieldset>
+
+        </div>
+
+        <div class="form-actions reveal" style="--d:3">
+          <button type="submit" class="btn-predict" id="predictBtn">
+            <span class="btn-label">Run prediction</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+          <p class="form-error" id="formError" role="alert"></p>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- RESULT -->
+    <aside class="panel result-panel">
+      <div class="result-inner">
+
+        <p class="result-status" id="resultStatus">Fill in the listing details and run the prediction.</p>
+
+        <div class="room-gallery" id="roomGallery">
+          <div class="room-card" data-label="Entire home/apt">
+            <span class="room-badge" data-badge hidden></span>
+            <svg class="room-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 22L24 8L42 22" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 19V40H38V19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 40V28H28V40" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="room-name">Entire home/apt</span>
+          </div>
+
+          <div class="room-card" data-label="Private room">
+            <span class="room-badge" data-badge hidden></span>
+            <svg class="room-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="10" width="32" height="30" rx="2" stroke="currentColor" stroke-width="2.4"/>
+              <path d="M26 10V40" stroke="currentColor" stroke-width="2.4"/>
+              <circle cx="23" cy="25" r="1.8" fill="currentColor"/>
+            </svg>
+            <span class="room-name">Private room</span>
+          </div>
+
+          <div class="room-card" data-label="Shared room">
+            <span class="room-badge" data-badge hidden></span>
+            <svg class="room-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 40V16C6 14.9 6.9 14 8 14H18C19.1 14 20 14.9 20 16V22" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M28 40V16C28 14.9 28.9 14 30 14H40C41.1 14 42 14.9 42 16V22" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 22H44V28H4V22Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M4 28V34H44V28" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+            </svg>
+            <span class="room-name">Shared room</span>
+          </div>
+        </div>
+
+        <div class="result-loading-inline" id="resultLoadingInline" hidden>
+          <div class="load-ring"></div>
+          <span>Talking to the model…</span>
+        </div>
+
+        <div class="result-bars" id="resultBars" hidden></div>
+
+        <button type="button" class="btn-ghost btn-reset" id="resetBtn" hidden>Run another</button>
+
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="foot-note">
+    Connects to your FastAPI <code>/predict</code> endpoint
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
